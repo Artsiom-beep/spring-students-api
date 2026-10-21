@@ -12,21 +12,23 @@ public class InMemoryStudentDAO {
 
    private final List<Student> STUDENTS = new ArrayList<>();
 
-    public List<Student> findAllStudent(){
+    public synchronized List<Student> findAllStudent(){
 
-        return STUDENTS;
+        return List.copyOf(STUDENTS);
     }
 
 
-    public Student saveStudent(Student student){
-        Student stud1;
-        stud1 = student;
-        STUDENTS.add(stud1);
-        return stud1;
+    // returns null when a student with this email already exists
+    public synchronized Student saveStudent(Student student){
+        if(findByEmail(student.getEmail()) != null){
+            return null;
+        }
+        STUDENTS.add(student);
+        return student;
     }
 
 
-    public Student findByEmail (String email){
+    public synchronized Student findByEmail (String email){
         Student stud = STUDENTS.stream()
                 .filter(e -> e.getEmail().equals(email))
                 .findFirst()
@@ -34,7 +36,7 @@ public class InMemoryStudentDAO {
         return stud;
     }
 
-    public Student updateStudent (Student student){
+    public synchronized Student updateStudent (Student student){
         var studIndex = IntStream.range(0, STUDENTS.size())
                 .filter(index -> STUDENTS.get(index).getEmail().equals(student.getEmail()))
                 .findFirst()
@@ -47,7 +49,7 @@ public class InMemoryStudentDAO {
         return null;
     }
 
-    public void deleteStudent(String email){
+    public synchronized void deleteStudent(String email){
         var student = findByEmail(email);
         if(student != null){
             STUDENTS.remove(student);

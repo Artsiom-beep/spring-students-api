@@ -3,7 +3,9 @@ package com.example.springstudents.controller;
 import com.example.springstudents.model.Student;
 import com.example.springstudents.service.StudentService;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
 
@@ -16,30 +18,41 @@ public class StudentController {
 
     @GetMapping
     public List<Student> findAllStudent (){
-        //todo
         return service.findAllStudent();
-
-
     }
 
     @PostMapping("save_student")
+    @ResponseStatus(HttpStatus.CREATED)
     public Student saveStudent(@RequestBody Student student){
-        return service.saveStudent(student);
+        Student saved = service.saveStudent(student);
+        if(saved == null){
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Student with this email already exists");
+        }
+        return saved;
     }
 
     @GetMapping("/{email}")
     public Student findByEmail(@PathVariable String email){
-        return service.findByEmail(email);
+        return orNotFound(service.findByEmail(email));
     }
 
     @PutMapping("update_student")
-    public Student updateStudent(Student student){
-        return service.updateStudent(student);
+    public Student updateStudent(@RequestBody Student student){
+        return orNotFound(service.updateStudent(student));
     }
 
     @DeleteMapping("delete_student/{email}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteStudent(@PathVariable String email){
+        orNotFound(service.findByEmail(email));
         service.deleteStudent(email);
+    }
+
+    private Student orNotFound(Student student){
+        if(student == null){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found");
+        }
+        return student;
     }
 
 
