@@ -1,4 +1,4 @@
-# Spring Students API
+# 🎓 Student Registry API — Spring Boot
 
 A small REST API built with **Spring Boot** and **Lombok** to practise the
 controller → service → repository layering. Data is stored in memory.
